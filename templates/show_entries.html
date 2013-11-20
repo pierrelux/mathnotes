@@ -22,7 +22,7 @@ Type some equation with Latex $\sum_i^n \frac{i}{n}$
     </form>
   {% endif %}
   <br/>
-   <div class="panel panel-default">
+   <div class="panel panel-warning">
      <div class="panel-heading">
        <h3 class="panel-title" id='preview-title'> Title </h3>
      </div>
@@ -35,11 +35,19 @@ Live update
    <div class="panel panel-default">
      <div class="panel-heading">
        <h3 class="panel-title"> {{ entry.title }} </h3>
-       <h2 class="panel-title"> {{ entry.tag }} </h3>
      </div>
     <div class="panel-body">
       {{ entry.text|markdown }}
     </div>
+        <!-- List group -->
+    <ul class="list-group">
+      <li class="list-group-item">
+        {% for tag in entry.tag.split() %}
+       <span class="label label-primary">{{ tag }}</span>
+       {% endfor %}</li>
+    </ul>
+
+
    </div>
   {% else %}
     <em>Unbelievable.  No entries here so far</em>
