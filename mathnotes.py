@@ -10,9 +10,10 @@
     :license: BSD, see LICENSE for more details.
 """
 import markdown
+import requests
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash, Markup
+     render_template, flash, Markup, jsonify
 
 
 # create our little application :)
@@ -70,6 +71,23 @@ def show_entries():
     entries = cur.fetchall()
     return render_template('show_entries.html', entries=entries)
 
+@app.route('/search/citation/<paper_title>')
+def get_citation(paper_title):
+  payload = {'q':paper_title,  'format':'json'}
+  r = requests.get("http://www.dblp.org/search/api/", params=payload)
+  result = r.json()
+
+  if int(result['result']['hits']['@sent']) == 0:
+    abort(404)
+
+  hits = result['result']['hits']['hit']
+  if isinstance(hits, list):
+    abort(404)
+  elif isinstance(hits, dict):
+    return jsonify(author=hits['info']['authors']['author'],
+		   title=hits['info']['title']['text'],
+		   year=hits['info']['year'],
+		   url=hits['url'])
 
 @app.route('/add', methods=['POST'])
 def add_entry():
