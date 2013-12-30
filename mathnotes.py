@@ -12,9 +12,10 @@
 
 import requests
 import markdown
+import json
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash, Markup, jsonify
+     render_template, flash, Markup, jsonify, Response
 
 from settings import flaskconfig as config
 import dbmodels
@@ -91,6 +92,18 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('show_entries'))
 
+@app.route('/references/')
+@app.route('/references/search/<search>')
+def get_mostrecent_references(search=None):
+    data = [dict({ 'value':'Time delay embedding', 'tokens':['time', 'Doina', 'Precup'], 'authors':'Doina Precup', 'year':'2013'}),
+            dict({ 'value':'Options Discovery', 'tokens':['option', 'Doina', 'Precup'], 'authors':'Doina Precup, Pierre-Luc Bacon', 'year':'2013'})]
+
+    if search:
+      print search
+      data = [{ 'value':'Manifold Learning', 'tokens':['manifold'], 'authors':'Doina Precup', 'year':'2013'},
+              { 'value':'Support Vector Machine', 'tokens':['Support', 'Vector'], 'authors':'Doina Precup, Pierre-Luc Bacon', 'year':'2013'}]
+
+    return Response(json.dumps(data),  mimetype='application/json')
 
 if __name__ == '__main__':
 	dbmodels.init_db()
