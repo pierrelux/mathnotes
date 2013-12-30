@@ -9,7 +9,7 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from app import app, zotero
+from app import app, db, zotero
 from dbmodels import Note, Tag, Citation, User
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
@@ -87,6 +87,3 @@ def oauthorized(resp):
 
     return redirect(url_for('write'))
 
-if __name__ == '__main__':
-    db.create_all(engine)
-    app.run()
