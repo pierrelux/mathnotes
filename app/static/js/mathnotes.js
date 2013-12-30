@@ -67,4 +67,4 @@ var Note = $$({},
    }
 );
 
-$$.document.append(Note, $('#content'))
+//$$.document.append(Note, $('#content'))
