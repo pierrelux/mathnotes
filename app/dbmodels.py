@@ -60,6 +60,8 @@ class User(db.Model):
     username = db.Column(db.String(64), nullable = False)
     password = db.Column(db.String(60), nullable = False)
     email = db.Column(db.String(120))
+    name = db.Column(db.String(64))
+    website = db.Column(db.String(120))
 
     notes = db.relationship('Note', backref = 'user', lazy = 'dynamic')
     authorizations = db.relationship('ServiceAuthorization', backref = 'user', lazy = 'dynamic')

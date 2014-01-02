@@ -49,3 +49,10 @@ class RegistrationForm(Form):
             return False
 
         return True
+
+class SettingsForm(Form):
+    username = TextField('username', validators = [Required()])
+    email = TextField('email', validators = [Required()])
+    name = TextField('name', validators = [Required()])
+    website = TextField('website', validators = [Required()])
+

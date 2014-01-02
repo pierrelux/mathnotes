@@ -1,0 +1,32 @@
+{% extends "main.html" %}
+{% block body %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+    {% for message in messages %}
+<li><div class="alert alert-warning alert-dismissable">
+  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  {{ message }}
+</div></li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h1>Sign up</h1>
+
+<form role="form" method="post" name="registration">
+  {{form.hidden_tag()}}
+  <div class="form-group">
+    {{form.email(class_='form-control', placeholder='Enter email', type='email')}}
+  </div>
+  <div class="form-group">
+    {{form.password(class_='form-control', placeholder='Password')}}
+  </div>
+  <div class="form-group">
+    {{form.username(class_='form-control', placeholder='Choose a username')}}
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+{% endblock %}

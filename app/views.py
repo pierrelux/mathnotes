@@ -10,31 +10,14 @@
 """
 
 from app import app, db, zotero, login_manager
-from forms import LoginForm, RegistrationForm
-from dbmodels import Note, Tag, Citation, User
+from forms import LoginForm, RegistrationForm, SettingsForm
+from dbmodels import Note, Tag, Citation, User, ZoteroAuthorization
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, Markup, jsonify, Response
 
 from flask.ext.login import login_required, login_user, logout_user, current_user
 
-@zotero.tokengetter
-def get_zotero_token():
-    if 'zotero_oauth' in session:
-        resp = session['zotero_oauth']
-        return resp['oauth_token'], resp['oauth_token_secret']
-
-@app.before_request
-def before_request():
-    g.user = None
-    if 'zotero_oauth' in session:
-        g.user = session['zotero_oauth']
-
-@app.teardown_appcontext
-def close_db(error):
-    """Closes the database again at the end of the request."""
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
 
 @app.template_filter("markdown")
 def render_markdown(markdown_text):
@@ -50,8 +33,6 @@ def index():
 @app.route('/add', methods=['POST'])
 @login_required
 def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
     note = Note(title = request.form['title'], text = request.form['text'], tagnames = request.form.getlist('tags'))
     db.session.add(note)
     db.session.commit()
@@ -84,7 +65,17 @@ def signup():
         flash_errors(form)
     return render_template('registration.html', form=form)
 
-@app.route('/login', methods=['POST'])
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    form = SettingsForm(obj=current_user)
+    if form.validate_on_submit():
+        form.populate_obj(current_user)
+        db.session.commit()
+
+    return render_template('settings.html', form=form, auth=current_user.authorizations.first())
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -102,28 +93,42 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+@zotero.tokengetter
+def get_zotero_token():
+    auth=current_user.authorizations.first()
+    if auth is not None:
+        return auth.oauth_token, auth.oauth_secret
+
+    return None
+
 @app.route('/auth/oauth/zotero')
-def auth():
-    callback_url = url_for('oauthorized', next=request.args.get('next'))
+@login_required
+def zotero_auth():
+    callback_url = url_for('zotero_authorized', next=request.args.get('next'))
     return zotero.authorize(callback=callback_url or request.referrer or None)
 
 @app.route('/auth/oauth/zotero/authorized')
+@login_required
 @zotero.authorized_handler
-def oauthorized(resp):
-    if resp is None:
-        flash('You denied the request to sign in.')
-        return redirect(url_for('index'))
+def zotero_authorized(resp):
+    if resp is not None:
+        auth = ZoteroAuthorization(oauth_token=resp['oauth_token'],
+                                oauth_secret=resp['oauth_token_secret'],
+                                userID=resp['userID'],
+                                username=resp['username'],
+                                user_id=current_user.id)
+        db.session.add(auth)
+        db.session.commit()
+    else:
+        flash("Remote authentication to Zotero failed")
 
-    user = User.query.filter_by(username = resp['username']).first()
-    if user is None:
-       print 'Adding user'
-       user = User(resp['username'])
-       db.session.add(user)
+    return redirect(request.args.get("next") or url_for("index"))
 
-    #user.oauth_token = resp['oauth_token']
-    #user.oauth_secret = resp['oauth_token_secret']
+@app.route('/auth/oauth/zotero/disconnect')
+@login_required
+def zotero_disconnect():
+    auth=current_user.authorizations.first()
+    db.session.delete(auth)
     db.session.commit()
-    print 'User already there'
 
-    return redirect(url_for('index'))
-
+    return redirect(request.args.get("next") or url_for("index"))

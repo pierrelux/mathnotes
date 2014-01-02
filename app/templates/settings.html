@@ -1,0 +1,40 @@
+{% extends "main.html" %}
+{% block body %}
+
+<div class="page-header">
+<h1>Settings</h1>
+</div>
+<form role="form" method="post" name="registration">
+  {{form.hidden_tag()}}
+  <div class="form-group">
+    <label for="email">Email address</label>
+    {{form.email(class_='form-control', placeholder='Enter email', type='email', id='email')}}
+  </div>
+  <div class="form-group">
+    <label for="username">Username</label>
+    {{form.username(class_='form-control', placeholder='Choose a username', id='username')}}
+  </div>
+  <div class="form-group">
+    <label for="name">Name</label>
+    {{form.name(class_='form-control', id='name')}}
+  </div>
+  <div class="form-group">
+    <label for="name">Website</label>
+    {{form.website(class_='form-control', id='website')}}
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+
+<div class="page-header">
+<h1>Authorizations</h1>
+</div>
+{% if not auth %}
+<p><img src="http://www.zotero.org/support/_media/logo/zotero_32x32x32.png">
+<a href="{{ url_for('zotero_auth', next='settings') }}">Connect to Zotero</a>
+</p>
+{% else %}
+<h3>Zotero</h3>
+<p>userID: {{ auth.userID }}, username: {{ auth.username }} </p>
+<p><a href="{{ url_for('zotero_disconnect', next='settings') }}">Disconnect</a>
+{% endif %}
+{% endblock %}
