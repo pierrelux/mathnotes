@@ -1,4 +1,5 @@
-from app import db
+from app import db, bcrypt
+from flask.ext.login import make_secure_token
 
 class Tag(db.Model):
 
@@ -55,25 +56,39 @@ Note_Citation = db.Table('note_citation', db.Model.metadata,
                     primary_key = True, nullable = False))
 
 class User(db.Model):
-
     id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(64), unique = True)
-    email = db.Column(db.String(120), unique = True)
+    username = db.Column(db.String(64), nullable = False)
+    password = db.Column(db.String(60), nullable = False)
+    email = db.Column(db.String(120))
 
     notes = db.relationship('Note', backref = 'user', lazy = 'dynamic')
     authorizations = db.relationship('ServiceAuthorization', backref = 'user', lazy = 'dynamic')
 
-    def __init__(self, username):
+    def __init__(self, username, password, email):
         self.username = username
+        self.password = bcrypt.generate_password_hash(password)
+        self.email = email
+
+    def check_password(self, passwd):
+        return bcrypt.check_password_hash(self.password, passwd)
+
+    def get_auth_token(self):
+        return make_secure_token(self.username, self.password)
 
     def is_authenticated(self):
         return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
 
     def get_id(self):
         return unicode(self.id)
 
     def __repr__(self):
-        return self.username
+        return '<User %r>' % (self.username)
 
 class ServiceAuthorization(db.Model):
     """ Authorization to a remote OAuth service

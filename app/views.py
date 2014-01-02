@@ -9,11 +9,14 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from app import app, db, zotero
+from app import app, db, zotero, login_manager
+from forms import LoginForm
 from dbmodels import Note, Tag, Citation, User
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, Markup, jsonify, Response
+
+from flask.ext.login import login_required, login_user, logout_user, current_user
 
 @zotero.tokengetter
 def get_zotero_token():
@@ -38,11 +41,14 @@ def render_markdown(markdown_text):
     return Markup(markdown.markdown(markdown_text))
 
 @app.route('/')
-def write():
-    entries = Note.query.order_by(Note.id.desc())
-    return render_template('index.html', entries=entries)
+def index():
+    if not current_user.is_authenticated():
+        return render_template('index.html')
+    else:
+        return render_template('write.html')
 
 @app.route('/add', methods=['POST'])
+@login_required
 def add_entry():
     if not session.get('logged_in'):
         abort(401)
@@ -51,15 +57,36 @@ def add_entry():
     db.session.commit()
 
     flash('New entry was successfully posted')
-    return redirect(url_for('write'))
+    return redirect(url_for('index'))
 
-@app.route('/login')
+@login_manager.user_loader
+def load_user(userid):
+    return User.query.get(userid)
+
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(u"Error in the %s field - %s" % (
+                getattr(form, field).label.text,
+                error
+            ))
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template('login.html')
+    form = LoginForm()
+    if form.validate_on_submit():
+        login_user(form.user, remember=form.remember_me.data)
+        flash("Logged in successfully.")
+        return redirect(request.args.get("next") or url_for("index"))
+    else:
+        flash_errors(form)
+
+    return render_template("login.html", form=form)
 
 @app.route('/logout')
+@login_required
 def logout():
-    session.pop('zotero_oauth', None)
+    logout_user()
     return redirect(url_for('index'))
 
 @app.route('/auth/oauth/zotero')
@@ -85,5 +112,5 @@ def oauthorized(resp):
     db.session.commit()
     print 'User already there'
 
-    return redirect(url_for('write'))
+    return redirect(url_for('index'))
 
