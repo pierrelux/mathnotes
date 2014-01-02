@@ -10,7 +10,7 @@
 """
 
 from app import app, db, zotero, login_manager
-from forms import LoginForm
+from forms import LoginForm, RegistrationForm
 from dbmodels import Note, Tag, Citation, User
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
@@ -71,7 +71,20 @@ def flash_errors(form):
                 error
             ))
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        login_user(user, remember=form.remember_me.data)
+        return redirect(request.args.get("next") or url_for("index"))
+    else:
+        flash_errors(form)
+    return render_template('registration.html', form=form)
+
+@app.route('/login', methods=['POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -81,7 +94,7 @@ def login():
     else:
         flash_errors(form)
 
-    return render_template("login.html", form=form)
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required
