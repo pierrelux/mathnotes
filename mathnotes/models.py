@@ -1,5 +1,12 @@
-from app import db, bcrypt
 from flask.ext.login import make_secure_token
+from flask.ext.sqlalchemy import SQLAlchemy
+from flaskext.bcrypt import Bcrypt
+
+from sqlalchemy.types import TypeDecorator, VARCHAR
+import json
+
+db = SQLAlchemy()
+bcrypt = Bcrypt()
 
 class Tag(db.Model):
 
@@ -121,3 +128,38 @@ class ZoteroAuthorization(ServiceAuthorization):
     __mapper_args__ = {
         'polymorphic_identity':'zotero_authorization',
     }
+
+class JSONEncodedDict(TypeDecorator):
+    """Represents an immutable structure as a json-encoded string.
+
+    Usage::
+
+        JSONEncodedDict(255)
+
+    """
+
+    impl = VARCHAR
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
+
+class ReferenceHint(db.Model):
+    """ Contains relevant references for a given user
+
+    Used for pre-fetching references for typeahead.
+    Most frequently used references or something else.
+    """
+    id = db.Column(db.Integer, primary_key = True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    authors = db.Column(JSONEncodedDict(200))
+    title = db.Column(db.String(200))
+    year = db.Column(db.Integer)

@@ -1,1 +1,1 @@
-venv
+venv/*settings.py*.un~*.swp*.pyc

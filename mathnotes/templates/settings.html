@@ -30,11 +30,11 @@
 </div>
 {% if not auth %}
 <p><img src="http://www.zotero.org/support/_media/logo/zotero_32x32x32.png">
-<a href="{{ url_for('zotero_auth', next='settings') }}">Connect to Zotero</a>
+<a href="{{ url_for('auth.zotero_auth', next='settings') }}">Connect to Zotero</a>
 </p>
 {% else %}
 <h3>Zotero</h3>
-<p>userID: {{ auth.userID }}, username: {{ auth.username }} </p>
-<p><a href="{{ url_for('zotero_disconnect', next='settings') }}">Disconnect</a>
+<p>userID: {{ auth.userID }}, username: {{ auth.username }}, oauth_token: {{ auth.oauth_token }}, oauth_secret: {{ auth.oauth_secret }}</p>
+<p><a href="{{ url_for('auth.zotero_disconnect', next='settings') }}">Disconnect</a>
 {% endif %}
 {% endblock %}
