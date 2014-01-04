@@ -36,6 +36,9 @@ def create_app(object_name):
     from mathnotes.refproviders import cache
     cache.init_app(app)
 
+    from mathnotes.views.notes import notes
+    app.register_blueprint(notes)
+
     return app
 
 if __name__ == '__main__':

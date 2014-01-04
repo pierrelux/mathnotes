@@ -4,9 +4,9 @@
 <script id="noteEditor" type="text/html">
 <form role="form">
     <div class="panel panel-default">
-        <div class="panel-heading"><input type="text" class="form-control" name="title" placeholder="Title"></div>
+        <div class="panel-heading"><input type="text" class="form-control" name="title" placeholder="Title" data-bind="title"></div>
         <div class="panel-body" id="textEditor">
-            <textarea name="text" class="form-control" rows="5">Write your stroke of thought</textarea>
+            <textarea name="text" class="form-control" rows="5" data-bind="text">Write your stroke of thought</textarea>
         </div>
 	   <div class="panel-footer">
             <div class="btn-toolbar" role="toolbar">
@@ -15,12 +15,12 @@
                   <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#referenceEditor"><span class="glyphicon glyphicon-link"></span></button>
                 </div>
                 <div class="btn-group pull-right">
-                  <button type="submit" class="btn btn-primary">OK</button>
+                  <button id="saveBtn" type="submit" class="btn btn-primary">Save</button>
                 </div>
             </div>
            <div class="form-group collapse" id="tagEditor">
                 <label for="exampleInputEmail1">Tags</label>
-                <input id="tagEditor" type="text" class="borderless form-control" placeholder="Search by title or author">
+                <input id="tagEditor" type="text" class="typeahead borderless form-control" placeholder="Search by title or author">
            </div>
            <div class="form-group collapse" id="referenceEditor">
                 <label for="exampleInputEmail1">References</label>

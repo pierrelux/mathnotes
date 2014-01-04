@@ -28,10 +28,21 @@ var ReferenceList = $$({
 });
 
 var NoteEditor = $$({
-  model: {},
+  model: {title:'Title', text:'Write your note'},
   view: { format: $('#noteEditor').html().trim() },
-  controller: {}
+  controller: {
+  'submit &': function(e){
+        e.preventDefault();
+        console.log('Saving');
+        this.save();
+   },
+  'persist:save:success': function(){
+       console.log('Saved');
+   }
+  }
 });
+
+NoteEditor.persist($$.adapter.restful, {collection:'notes', baseUrl:'/'});
 
 $$.document.append(NoteEditor, $('#noteEditor'))
 $('#referenceSearch').typeahead({
@@ -51,6 +62,7 @@ $('#referenceSearch').typeahead({
     ].join(''),
     engine: Hogan
 });
+
 $$.document.append(NoteEditor, $('#content'));
 $$.document.after(ReferenceList, $('#textEditor'));
 $('#referenceSearch').on('typeahead:selected', function (object, datum) {
@@ -58,5 +70,5 @@ $('#referenceSearch').on('typeahead:selected', function (object, datum) {
     ReferenceList.append(ref);
     $('#referenceSearch').val('');
 });
-    var ref = $$(Reference, {title: 'asdfasdfas', authors: 'Authors'})
+    var ref = $$(Reference, {title: 'Some Title', authors: 'Authors'})
     ReferenceList.append(ref);
