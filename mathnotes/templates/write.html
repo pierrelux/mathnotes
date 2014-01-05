@@ -1,13 +1,14 @@
 {% extends "main.html" %}
 {% block body %}
 
-<script id="noteEditor" type="text/html">
-<form role="form">
+<script id="NoteEditorTemplate" type="text/html">
+<form role="form" id="noteEditor">
     <div class="panel panel-default">
         <div class="panel-heading"><input type="text" class="form-control" name="title" placeholder="Title" data-bind="title"></div>
         <div class="panel-body" id="textEditor">
-            <textarea name="text" class="form-control" rows="5" data-bind="text">Write your stroke of thought</textarea>
+            <textarea name="text" class="form-control" rows="5" data-bind="text" placeholder="Write your stroke of thought"></textarea>
         </div>
+       <ul class="list-group" data-bind="references" id="referenceList"></ul>
 	   <div class="panel-footer">
             <div class="btn-toolbar" role="toolbar">
                 <div class="btn-group">
@@ -29,6 +30,17 @@
        </div>
     </div>
 </form>
+</script>
+
+<script id="note" type="text/html">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title" data-bind="title">Title</h3>
+  </div>
+  <div class="panel-body" data-bind="text">
+    Panel content
+  </div>
+</div>
 </script>
 
   {% for entry in entries %}

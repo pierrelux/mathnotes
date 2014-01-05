@@ -27,7 +27,8 @@ class Note(db.Model):
     citations = db.relationship("Citation", secondary="note_citation", backref="notes")
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, text, tagnames):
+    def __init__(self, author, title, text, tagnames=[]):
+        self.author_id = author
         self.title = title
         self.text = text
         self.tags = []
